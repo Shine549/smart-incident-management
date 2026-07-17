@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: smartims-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: smartims
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - smartims-network
+
+  backend:
+    build: ./backend
+    container_name: smartims-backend
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/smartims
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+
+      GMAIL_USERNAME: shinedas2011@gmail.com
+      GMAIL_PASSWORD: "jbdu lkjm klzj xaak"
+      MAIL_FROM: shinedas2011@gmail.com
+
+      JWT_SECRET: smart-incident-management-secret-key-which-is-very-secure-123456
+      JWT_EXPIRATION: "3600000"
+
+      FRONTEND_LOGIN_URL: http://54.242.12.93:3000/login
+    ports:
+      - "8080:8080"
+    networks:
+      - smartims-network
+
+  frontend:
+    build: ./frontend
+    container_name: smartims-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    networks:
+      - smartims-network
+
+volumes:
+  postgres_data:
+
+networks:
+  smartims-network:
+    driver: bridge
